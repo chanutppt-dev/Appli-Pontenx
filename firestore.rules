@@ -1,0 +1,58 @@
+// ============================================================
+// RÈGLES DE SÉCURITÉ FIREBASE FIRESTORE
+// À copier dans Firebase Console → Firestore → Règles
+// ============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Seuls les utilisateurs authentifiés peuvent lire/écrire
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Vérifie si l'utilisateur est admin
+    function isAdmin() {
+      return isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Profils utilisateurs
+    match /users/{userId} {
+      allow read: if isAuth();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Réservations : lecture pour tous, écriture pour soi + suppression admin
+    match /reservations/{resId} {
+      allow read: if isAuth();
+      allow create: if isAuth();
+      allow update: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Consignes : lecture pour tous, écriture admin uniquement
+    match /consignes/{consigneId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // Activités : lecture pour tous, création admin, commentaires pour membres
+    match /activites/{actId} {
+      allow read: if isAuth();
+      allow create: if isAdmin();
+      allow update: if isAuth(); // pour les commentaires (arrayUnion)
+      allow delete: if isAdmin();
+    }
+
+    // Messages : lecture et écriture pour tous les membres
+    match /messages/{msgId} {
+      allow read: if isAuth();
+      allow create: if isAuth();
+      allow delete: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+  }
+}

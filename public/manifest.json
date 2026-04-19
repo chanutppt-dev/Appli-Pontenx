@@ -1,0 +1,15 @@
+{
+  "short_name": "Pontenx",
+  "name": "Pontenx — Maison des cousins",
+  "description": "Application familiale de la maison de vacances de Pontenx-les-Forges",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF5ED",
+  "theme_color": "#7B4F2E",
+  "lang": "fr"
+}
