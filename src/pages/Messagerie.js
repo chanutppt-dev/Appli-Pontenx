@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, limit } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-//import { db, storage } from "../firebase";
+import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
