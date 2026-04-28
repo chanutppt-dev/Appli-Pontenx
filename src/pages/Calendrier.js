@@ -31,6 +31,25 @@ function formatDate(dateStr) {
   } catch { return dateStr; }
 }
 
+// Vérifie si deux périodes se chevauchent
+function periodsOverlap(start1, end1, start2, end2) {
+  return start1 < end2 && end1 > start2;
+}
+
+// Retourne les chambres déjà réservées pour une période donnée
+function getUnavailableRooms(reservations, arrival, departure, excludeId = null) {
+  if (!arrival || !departure) return [];
+  const unavailable = new Set();
+  reservations.forEach(r => {
+    if (r.id === excludeId) return;
+    if (!r.rooms || r.rooms.length === 0) return;
+    if (periodsOverlap(arrival, departure, r.arrival, r.departure)) {
+      r.rooms.forEach(room => unavailable.add(room));
+    }
+  });
+  return Array.from(unavailable);
+}
+
 export default function Calendrier() {
   const { currentUser, userProfile, isAdmin } = useAuth();
   const [current, setCurrent] = useState(new Date());
@@ -58,6 +77,9 @@ export default function Calendrier() {
     return unsub;
   }, []);
 
+  // Chambres indisponibles pour les dates sélectionnées
+  const unavailableRooms = getUnavailableRooms(reservations, form.arrival, form.departure);
+
   const monthStart = startOfMonth(current);
   const monthEnd = endOfMonth(current);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
@@ -77,13 +99,13 @@ export default function Calendrier() {
     const dateStr = format(day, "yyyy-MM-dd");
     if (showForm) {
       if (!form.arrival || picking === "arrival") {
-        setForm(f => ({ ...f, arrival: dateStr, departure: "" }));
+        setForm(f => ({ ...f, arrival: dateStr, departure: "", rooms: [] }));
         setPicking("departure");
         return;
       }
       if (picking === "departure") {
         if (dateStr <= form.arrival) {
-          setForm(f => ({ ...f, arrival: dateStr, departure: "" }));
+          setForm(f => ({ ...f, arrival: dateStr, departure: "", rooms: [] }));
           setPicking("departure");
         } else {
           setForm(f => ({ ...f, departure: dateStr }));
@@ -103,19 +125,39 @@ export default function Calendrier() {
     } catch { return false; }
   }
 
-  function isArrival(day) {
+  function isArrivalDay(day) {
     return form.arrival && isSameDay(day, parseISO(form.arrival));
   }
 
-  function isDeparture(day) {
+  function isDepartureDay(day) {
     return form.departure && isSameDay(day, parseISO(form.departure));
+  }
+
+  function toggleRoom(room) {
+    if (unavailableRooms.includes(room)) return; // bloqué
+    setForm(f => ({
+      ...f,
+      rooms: f.rooms.includes(room) ? f.rooms.filter(r => r !== room) : [...f.rooms, room],
+    }));
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
-    if (!form.arrival || !form.departure) { setError("Veuillez sélectionner vos dates sur le calendrier."); return; }
-    if (form.departure <= form.arrival) { setError("La date de départ doit être après l'arrivée."); return; }
+    if (!form.arrival || !form.departure) {
+      setError("Veuillez sélectionner vos dates sur le calendrier.");
+      return;
+    }
+    if (form.departure <= form.arrival) {
+      setError("La date de départ doit être après l'arrivée.");
+      return;
+    }
+    // Vérification finale des conflits
+    const conflicts = form.rooms.filter(r => unavailableRooms.includes(r));
+    if (conflicts.length > 0) {
+      setError(`Ces chambres sont déjà réservées pour ces dates : ${conflicts.join(", ")}`);
+      return;
+    }
     setSaving(true);
     try {
       await addDoc(collection(db, "reservations"), {
@@ -140,13 +182,6 @@ export default function Calendrier() {
     if (userId !== currentUser.uid && !isAdmin) return;
     if (!window.confirm("Supprimer cette réservation ?")) return;
     await deleteDoc(doc(db, "reservations", id));
-  }
-
-  function toggleRoom(room) {
-    setForm(f => ({
-      ...f,
-      rooms: f.rooms.includes(room) ? f.rooms.filter(r => r !== room) : [...f.rooms, room],
-    }));
   }
 
   function toggleForm() {
@@ -186,8 +221,8 @@ export default function Calendrier() {
           {days.map(day => {
             const dayRes = reservationsForDay(day);
             const isToday = isSameDay(day, new Date());
-            const arrival = isArrival(day);
-            const departure = isDeparture(day);
+            const arrival = isArrivalDay(day);
+            const departure = isDepartureDay(day);
             const inRange = isInRange(day);
             return (
               <div
@@ -286,25 +321,46 @@ export default function Calendrier() {
               <div style={s.dateBoxVal}>{form.departure ? formatDate(form.departure) : "—"}</div>
             </div>
             {form.arrival && (
-              <button style={s.resetDates} onClick={() => { setForm(f => ({ ...f, arrival: "", departure: "" })); setPicking("arrival"); }}>↺</button>
+              <button style={s.resetDates} onClick={() => { setForm(f => ({ ...f, arrival: "", departure: "", rooms: [] })); setPicking("arrival"); }}>↺</button>
             )}
           </div>
 
           <form onSubmit={handleSubmit}>
             <div style={{ marginTop: 12 }}>
-              <label>Chambres <span style={{ color: "#9A7A62", fontWeight: 400 }}>(optionnel)</span></label>
-              <div style={s.roomsGrid}>
-                {ROOMS.map(room => (
-                  <div
-                    key={room}
-                    style={{ ...s.roomCheck, ...(form.rooms.includes(room) ? s.roomChecked : {}) }}
-                    onClick={() => toggleRoom(room)}
-                  >
-                    {room}
+              <label>
+                Chambres <span style={{ color: "#9A7A62", fontWeight: 400 }}>(optionnel)</span>
+              </label>
+              {!form.arrival || !form.departure ? (
+                <p style={s.skipNote}>Sélectionnez d'abord vos dates pour voir la disponibilité</p>
+              ) : (
+                <>
+                  {unavailableRooms.length > 0 && (
+                    <div style={s.conflictNote}>
+                      🔒 {unavailableRooms.length} chambre{unavailableRooms.length > 1 ? "s" : ""} déjà réservée{unavailableRooms.length > 1 ? "s" : ""} pour ces dates
+                    </div>
+                  )}
+                  <div style={s.roomsGrid}>
+                    {ROOMS.map(room => {
+                      const unavailable = unavailableRooms.includes(room);
+                      const selected = form.rooms.includes(room);
+                      return (
+                        <div
+                          key={room}
+                          style={{
+                            ...s.roomCheck,
+                            ...(selected ? s.roomChecked : {}),
+                            ...(unavailable ? s.roomUnavailable : {}),
+                          }}
+                          onClick={() => toggleRoom(room)}
+                        >
+                          {unavailable ? "🔒 " : ""}{room}
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
-              <p style={s.skipNote}>Vous pouvez réserver sans choisir de chambre</p>
+                  <p style={s.skipNote}>Vous pouvez réserver sans choisir de chambre</p>
+                </>
+              )}
             </div>
             <div style={{ marginTop: 10 }}>
               <label>Commentaire (optionnel)</label>
@@ -316,7 +372,12 @@ export default function Calendrier() {
                 style={{ resize: "none" }}
               />
             </div>
-            <button className="btn-primary" type="submit" disabled={saving || !form.arrival || !form.departure} style={{ marginTop: 12 }}>
+            <button
+              className="btn-primary"
+              type="submit"
+              disabled={saving || !form.arrival || !form.departure}
+              style={{ marginTop: 12 }}
+            >
               {saving ? "Enregistrement…" : "Confirmer la réservation"}
             </button>
           </form>
@@ -361,8 +422,10 @@ const s = {
   dateBoxVal: { fontSize: 14, fontWeight: 700, color: "#5C3317", marginTop: 2 },
   dateArrow: { fontSize: 14, color: "#9A7A62" },
   resetDates: { background: "none", border: "none", color: "#9A7A62", fontSize: 16, cursor: "pointer", padding: "0 4px" },
+  conflictNote: { fontSize: 11, color: "#854F0B", background: "#FAEEDA", borderRadius: 8, padding: "6px 10px", marginTop: 6, marginBottom: 6 },
   roomsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginTop: 6 },
   roomCheck: { padding: "7px 8px", border: "1px solid #E8D5B7", borderRadius: 8, cursor: "pointer", fontSize: 10, color: "#6B4C35", background: "white", textAlign: "center", transition: "all 0.15s", lineHeight: 1.3 },
   roomChecked: { background: "#F2E8D5", borderColor: "#7B4F2E", color: "#5C3317", fontWeight: 700 },
+  roomUnavailable: { background: "#F5F5F5", border: "1px solid #E0E0E0", color: "#BBBBBB", cursor: "not-allowed", opacity: 0.7 },
   skipNote: { fontSize: 10, color: "#9A7A62", textAlign: "center", marginTop: 6 },
 };
