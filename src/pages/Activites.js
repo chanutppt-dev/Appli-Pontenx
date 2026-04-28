@@ -179,7 +179,7 @@ export default function Activites() {
         </div>
       ))}
 
-      {isAdmin && (
+      { (
         <>
           <button className="btn-ghost" onClick={() => setShowForm(!showForm)} style={{ marginTop: 4 }}>
             {showForm ? "Annuler" : "+ Ajouter une activité"}

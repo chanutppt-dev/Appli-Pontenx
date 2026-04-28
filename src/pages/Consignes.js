@@ -80,7 +80,7 @@ export default function Consignes() {
         </div>
       ))}
 
-      {isAdmin && (
+      { (
         <>
           <button className="btn-ghost" onClick={() => { setShowForm(!showForm); setEditing(null); setForm({ icon: "🔑", title: "", subtitle: "", body: "" }); }} style={{ marginTop: 4 }}>
             {showForm && !editing ? "Annuler" : "+ Ajouter une fiche"}
