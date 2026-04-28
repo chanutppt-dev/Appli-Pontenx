@@ -4,6 +4,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 // import { getStorage } from "firebase/storage";
 import { getMessaging, isSupported } from "firebase/messaging";
+// import { getMessaging, isSupported } from "firebase/messaging";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -20,11 +21,12 @@ const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-//export const storage=getStorage(app);
+// export const storage = getStorage(app);
 export const storage = getStorage(app);
 
 // Notifications push (PWA)
 export const getMessagingInstance = async () => {
+  // export const getMessagingInstance = async () => { ... };
   const supported = await isSupported();
   if (supported) {
     return getMessaging(app);
