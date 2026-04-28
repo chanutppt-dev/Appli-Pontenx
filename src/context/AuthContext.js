@@ -5,7 +5,8 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail,
 } from "firebase/auth";
-import { auth } from "../firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { auth, db } from "../firebase";
 
 const AuthContext = createContext();
 
@@ -15,6 +16,7 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   async function login(email, password) {
@@ -30,8 +32,32 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+      if (user) {
+        try {
+          const q = query(
+            collection(db, "users"),
+            where("email", "==", user.email)
+          );
+          const snap = await getDocs(q);
+          if (!snap.empty) {
+            setUserProfile(snap.docs[0].data());
+          } else {
+            setUserProfile({
+              displayName: user.email,
+              role: "admin",
+            });
+          }
+        } catch (e) {
+          setUserProfile({
+            displayName: user.email,
+            role: "admin",
+          });
+        }
+      } else {
+        setUserProfile(null);
+      }
       setLoading(false);
     });
     return unsubscribe;
@@ -39,14 +65,11 @@ export function AuthProvider({ children }) {
 
   const value = {
     currentUser,
-    userProfile: currentUser ? {
-      displayName: currentUser.displayName || currentUser.email,
-      role: "admin",
-    } : null,
+    userProfile,
     login,
     logout,
     resetPassword,
-    isAdmin: true,
+    isAdmin: userProfile?.role === "admin",
   };
 
   return (
