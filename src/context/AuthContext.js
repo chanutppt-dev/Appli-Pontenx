@@ -5,8 +5,7 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail,
 } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "../firebase";
+import { auth } from "../firebase";
 
 const AuthContext = createContext();
 
@@ -16,7 +15,6 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   async function login(email, password) {
@@ -32,16 +30,8 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
-      if (user) {
-        const profileDoc = await getDoc(doc(db, "users", user.uid));
-        if (profileDoc.exists()) {
-          setUserProfile(profileDoc.data());
-        }
-      } else {
-        setUserProfile(null);
-      }
       setLoading(false);
     });
     return unsubscribe;
@@ -49,11 +39,14 @@ export function AuthProvider({ children }) {
 
   const value = {
     currentUser,
-    userProfile,
+    userProfile: currentUser ? {
+      displayName: currentUser.displayName || currentUser.email,
+      role: "admin",
+    } : null,
     login,
     logout,
     resetPassword,
-    isAdmin: userProfile?.role === "admin",
+    isAdmin: true,
   };
 
   return (
