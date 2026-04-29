@@ -65,16 +65,16 @@ function AppShell() {
     <div className="app-shell">
       {/* Header */}
       <header className="app-header">
-        <div className="app-header-title">
+        <div className="header-avatar" onClick={() => handleTabChange("famille")}>
+          {getInitials(userProfile?.displayName || currentUser.email || "")}
+        </div>
+        <div className="app-header-title" style={{ textAlign: "center", flex: 1 }}>
           <h1>Pontenx</h1>
           <p>Maison des cousins</p>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-          <div className="header-avatar" onClick={() => handleTabChange("famille")}>
-            {getInitials(userProfile?.displayName || currentUser.email || "")}
-          </div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, minWidth: 36 }}>
           <div style={{ fontSize: 9, color: "rgba(250,245,237,0.55)", textAlign: "right", lineHeight: 1.4 }}>
-            v 1.0 · Développé par Stef
+            v 1.0<br/>Stef
           </div>
         </div>
       </header>

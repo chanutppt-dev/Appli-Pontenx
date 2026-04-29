@@ -60,6 +60,7 @@ export default function Calendrier() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [picking, setPicking] = useState(null);
+  const [showAllResa, setShowAllResa] = useState(false);
   const [form, setForm] = useState({ arrival: "", departure: "", rooms: [], comment: "" });
 
   useEffect(() => {
@@ -283,38 +284,37 @@ export default function Calendrier() {
       </button>
 
       {/* 3 — Liste dépliable de toutes les réservations */}
-      <div
-        style={s.allResaHeader}
-        onClick={() => document.getElementById('all-resa').classList.toggle('hidden')}
-      >
+      <div style={s.allResaHeader} onClick={() => setShowAllResa(v => !v)}>
         <span>Toutes les réservations ({reservations.length})</span>
-        <span style={s.allResaChevron}>›</span>
+        <span style={{ ...s.allResaChevron, transform: showAllResa ? "rotate(90deg)" : "none" }}>›</span>
       </div>
-      <div id="all-resa" className="hidden">
-        {reservations.length === 0 && <p style={s.empty}>Aucune réservation pour le moment.</p>}
-        {reservations.map(r => (
-          <div className="card" key={r.id} style={{ padding: "12px 14px" }}>
-            <div style={s.stayHeader}>
-              <div style={{ ...s.av, background: colorMap[r.userId] || "#A0693A" }}>
-                {getInitials(r.userName)}
+      {showAllResa && (
+        <div className="fade-in">
+          {reservations.length === 0 && <p style={s.empty}>Aucune réservation pour le moment.</p>}
+          {reservations.map(r => (
+            <div className="card" key={r.id} style={{ padding: "12px 14px" }}>
+              <div style={s.stayHeader}>
+                <div style={{ ...s.av, background: colorMap[r.userId] || "#A0693A" }}>
+                  {getInitials(r.userName)}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={s.stayName}>{r.userName}</div>
+                  <div style={s.stayDates}>{formatDate(r.arrival)} → {formatDate(r.departure)}</div>
+                </div>
+                {(r.userId === currentUser.uid || isAdmin) && (
+                  <button style={s.deleteBtn} onClick={() => handleDelete(r.id, r.userId)}>✕</button>
+                )}
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={s.stayName}>{r.userName}</div>
-                <div style={s.stayDates}>{formatDate(r.arrival)} → {formatDate(r.departure)}</div>
-              </div>
-              {(r.userId === currentUser.uid || isAdmin) && (
-                <button style={s.deleteBtn} onClick={() => handleDelete(r.id, r.userId)}>✕</button>
+              {r.rooms?.length > 0 && (
+                <div style={s.tagRow}>
+                  {r.rooms.map(rm => <span key={rm} className="room-tag">{rm}</span>)}
+                </div>
               )}
+              {r.comment && <div style={s.comment}>"{r.comment}"</div>}
             </div>
-            {r.rooms?.length > 0 && (
-              <div style={s.tagRow}>
-                {r.rooms.map(rm => <span key={rm} className="room-tag">{rm}</span>)}
-              </div>
-            )}
-            {r.comment && <div style={s.comment}>"{r.comment}"</div>}
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {showForm && (
         <div className="card fade-in" style={{ marginTop: 10 }}>
