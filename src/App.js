@@ -64,21 +64,36 @@ function AppShell() {
   return (
     <div className="app-shell">
       {/* Header */}
-      <header className="app-header" style={{ flexDirection: "column", alignItems: "stretch", padding: "0" }}>
+      <header className="app-header" style={{
+        flexDirection: "column",
+        alignItems: "stretch",
+        padding: "0",
+        backgroundImage: "url('/header-bg.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        {/* Overlay sombre pour lisibilité */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(160deg, rgba(92,51,23,0.82) 0%, rgba(123,79,46,0.75) 100%)",
+          zIndex: 0,
+        }} />
         {/* Ligne 1 — Pontenx au centre, v1.0 à droite */}
-        <div style={{ display: "flex", alignItems: "center", paddingTop: "calc(14px + env(safe-area-inset-top))", paddingLeft: 20, paddingRight: 20, paddingBottom: 2 }}>
+        <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", paddingTop: "calc(14px + env(safe-area-inset-top))", paddingLeft: 20, paddingRight: 20, paddingBottom: 2 }}>
           <div style={{ width: 80 }} />
           <h1 style={{ flex: 1, fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 600, color: "#FAF5ED", letterSpacing: "0.02em", textAlign: "center" }}>
             Pontenx
           </h1>
-          <div style={{ width: 80, fontSize: 9, color: "rgba(250,245,237,0.55)", textAlign: "right", lineHeight: 1.4, fontFamily: "'Lato', sans-serif" }}>
+          <div style={{ width: 80, fontSize: 9, color: "rgba(250,245,237,0.70)", textAlign: "right", lineHeight: 1.4, fontFamily: "'Lato', sans-serif" }}>
             v 1.0<br/>par Stef
           </div>
         </div>
         {/* Ligne 2 — Maison des cousins au centre, avatar à droite */}
-        <div style={{ display: "flex", alignItems: "center", paddingLeft: 20, paddingRight: 20, paddingBottom: 14 }}>
+        <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", paddingLeft: 20, paddingRight: 20, paddingBottom: 14 }}>
           <div style={{ width: 36 }} />
-          <p style={{ flex: 1, fontSize: 13, color: "rgba(250,245,237,0.80)", fontStyle: "italic", fontFamily: "'Lato', sans-serif", textAlign: "center" }}>
+          <p style={{ flex: 1, fontSize: 13, color: "rgba(250,245,237,0.85)", fontStyle: "italic", fontFamily: "'Lato', sans-serif", textAlign: "center" }}>
             Maison des cousins
           </p>
           <div className="header-avatar" onClick={() => handleTabChange("famille")}>
