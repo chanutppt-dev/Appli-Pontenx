@@ -240,9 +240,11 @@ export default function Calendrier() {
                 <span>{format(day, "d")}</span>
                 {dayRes.length > 0 && (
                   <div style={s.dots}>
-                    {dayRes.map(r => (
-                      <div key={r.id} style={{ ...s.dot, background: colorMap[r.userId] || "#A0693A" }} />
-                    ))}
+                    {dayRes.flatMap(r =>
+                      (r.rooms && r.rooms.length > 0 ? r.rooms : [null]).map((rm, i) => (
+                        <div key={r.id + i} style={{ ...s.dot, background: colorMap[r.userId] || "#A0693A" }} />
+                      ))
+                    )}
                   </div>
                 )}
               </div>
