@@ -10,9 +10,9 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval,
 import { fr } from "date-fns/locale";
 
 const ROOMS = [
-  "Chambre Principale", "Chambre Rez-de-Chaussée", "Chambre Jaune",
-  "Chambre Laura Ashley", "Chambre Grecque", "Chambre aux Baldaquins",
-  "Chambre aux Lits Anciens", "Chambre Bleue", "Pavillon",
+  "Chambre Principale", "Chambre Rez-de-Chaussée", "Chambre des filles",
+  "Chambre Laura Ashley", "Chambre des garçons", "Chambre au baldaquin",
+  "Chambre aux Lits Anciens", "Chambre Mathilde", "Pavillon",
 ];
 
 const COLORS = [
