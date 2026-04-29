@@ -65,21 +65,22 @@ function AppShell() {
     <div className="app-shell">
       {/* Header */}
       <header className="app-header" style={{ flexDirection: "column", alignItems: "stretch", padding: "0" }}>
-        {/* Ligne du haut — sous la caméra */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "calc(14px + env(safe-area-inset-top))", paddingLeft: 20, paddingRight: 20, paddingBottom: 4 }}>
-          <div style={{ fontSize: 11, color: "rgba(250,245,237,0.80)", fontStyle: "italic", fontFamily: "'Lato', sans-serif" }}>
-            Maison des cousins
-          </div>
-          <div style={{ fontSize: 9, color: "rgba(250,245,237,0.55)", textAlign: "right", lineHeight: 1.4, fontFamily: "'Lato', sans-serif" }}>
-            v 1.0 · Développé par Stef
-          </div>
-        </div>
-        {/* Ligne du bas — titre + avatar */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingLeft: 20, paddingRight: 20, paddingBottom: 14 }}>
-          <div style={{ width: 36 }} />
-          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 600, color: "#FAF5ED", letterSpacing: "0.02em", textAlign: "center" }}>
+        {/* Ligne 1 — Pontenx au centre, v1.0 à droite */}
+        <div style={{ display: "flex", alignItems: "center", paddingTop: "calc(14px + env(safe-area-inset-top))", paddingLeft: 20, paddingRight: 20, paddingBottom: 2 }}>
+          <div style={{ width: 80 }} />
+          <h1 style={{ flex: 1, fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 600, color: "#FAF5ED", letterSpacing: "0.02em", textAlign: "center" }}>
             Pontenx
           </h1>
+          <div style={{ width: 80, fontSize: 9, color: "rgba(250,245,237,0.55)", textAlign: "right", lineHeight: 1.4, fontFamily: "'Lato', sans-serif" }}>
+            v 1.0<br/>par Stef
+          </div>
+        </div>
+        {/* Ligne 2 — Maison des cousins au centre, avatar à droite */}
+        <div style={{ display: "flex", alignItems: "center", paddingLeft: 20, paddingRight: 20, paddingBottom: 14 }}>
+          <div style={{ width: 36 }} />
+          <p style={{ flex: 1, fontSize: 13, color: "rgba(250,245,237,0.80)", fontStyle: "italic", fontFamily: "'Lato', sans-serif", textAlign: "center" }}>
+            Maison des cousins
+          </p>
           <div className="header-avatar" onClick={() => handleTabChange("famille")}>
             {getInitials(userProfile?.displayName || currentUser.email || "")}
           </div>
