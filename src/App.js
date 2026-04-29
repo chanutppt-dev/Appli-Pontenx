@@ -6,7 +6,7 @@ import Consignes from "./pages/Consignes";
 import Activites from "./pages/Activites";
 import Messagerie from "./pages/Messagerie";
 import Famille from "./pages/Famille";
-import { collection, query, orderBy, onSnapshot, where, limit } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, limit } from "firebase/firestore";
 import { db } from "./firebase";
 import "./index.css";
 
@@ -22,13 +22,10 @@ function AppShell() {
   const { currentUser, userProfile } = useAuth();
   const [tab, setTab] = useState("calendrier");
   const [unread, setUnread] = useState(false);
-  const [lastSeen, setLastSeen] = useState(null);
 
-  // Track unread messages
   useEffect(() => {
     if (!currentUser) return;
     const saved = localStorage.getItem("pontenx_last_seen");
-    setLastSeen(saved ? new Date(saved) : null);
     const q = query(collection(db, "messages"), orderBy("createdAt", "desc"), limit(1));
     const unsub = onSnapshot(q, snap => {
       if (snap.empty) return;
@@ -72,8 +69,13 @@ function AppShell() {
           <h1>Pontenx</h1>
           <p>Maison des cousins</p>
         </div>
-        <div className="header-avatar" onClick={() => handleTabChange("famille")}>
-          {getInitials(userProfile?.displayName || currentUser.email || "")}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+          <div className="header-avatar" onClick={() => handleTabChange("famille")}>
+            {getInitials(userProfile?.displayName || currentUser.email || "")}
+          </div>
+          <div style={{ fontSize: 9, color: "rgba(250,245,237,0.55)", textAlign: "right", lineHeight: 1.4 }}>
+            v 1.0 · Développé par Stef
+          </div>
         </div>
       </header>
 
