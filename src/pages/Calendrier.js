@@ -250,6 +250,7 @@ export default function Calendrier() {
         </div>
       </div>
 
+      {/* 1 — Réservations du jour sélectionné */}
       {selectedDay && !showForm && (
         <div className="card fade-in" style={{ marginBottom: 10 }}>
           <div style={s.dayTitle}>{format(selectedDay.day, "EEEE d MMMM", { locale: fr })}</div>
@@ -276,34 +277,44 @@ export default function Calendrier() {
         </div>
       )}
 
-      <div className="section-label">Tous les séjours</div>
-      {reservations.length === 0 && <p style={s.empty}>Aucune réservation pour le moment.</p>}
-      {reservations.map(r => (
-        <div className="card" key={r.id} style={{ padding: "12px 14px" }}>
-          <div style={s.stayHeader}>
-            <div style={{ ...s.av, background: colorMap[r.userId] || "#A0693A" }}>
-              {getInitials(r.userName)}
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={s.stayName}>{r.userName}</div>
-              <div style={s.stayDates}>{formatDate(r.arrival)} → {formatDate(r.departure)}</div>
-            </div>
-            {(r.userId === currentUser.uid || isAdmin) && (
-              <button style={s.deleteBtn} onClick={() => handleDelete(r.id, r.userId)}>✕</button>
-            )}
-          </div>
-          {r.rooms?.length > 0 && (
-            <div style={s.tagRow}>
-              {r.rooms.map(rm => <span key={rm} className="room-tag">{rm}</span>)}
-            </div>
-          )}
-          {r.comment && <div style={s.comment}>"{r.comment}"</div>}
-        </div>
-      ))}
-
+      {/* 2 — Bouton réserver */}
       <button className="btn-ghost" onClick={toggleForm} style={{ marginTop: 4 }}>
         {showForm ? "Annuler" : "+ Réserver mon séjour"}
       </button>
+
+      {/* 3 — Liste dépliable de toutes les réservations */}
+      <div
+        style={s.allResaHeader}
+        onClick={() => document.getElementById('all-resa').classList.toggle('hidden')}
+      >
+        <span>Toutes les réservations ({reservations.length})</span>
+        <span style={s.allResaChevron}>›</span>
+      </div>
+      <div id="all-resa" className="hidden">
+        {reservations.length === 0 && <p style={s.empty}>Aucune réservation pour le moment.</p>}
+        {reservations.map(r => (
+          <div className="card" key={r.id} style={{ padding: "12px 14px" }}>
+            <div style={s.stayHeader}>
+              <div style={{ ...s.av, background: colorMap[r.userId] || "#A0693A" }}>
+                {getInitials(r.userName)}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={s.stayName}>{r.userName}</div>
+                <div style={s.stayDates}>{formatDate(r.arrival)} → {formatDate(r.departure)}</div>
+              </div>
+              {(r.userId === currentUser.uid || isAdmin) && (
+                <button style={s.deleteBtn} onClick={() => handleDelete(r.id, r.userId)}>✕</button>
+              )}
+            </div>
+            {r.rooms?.length > 0 && (
+              <div style={s.tagRow}>
+                {r.rooms.map(rm => <span key={rm} className="room-tag">{rm}</span>)}
+              </div>
+            )}
+            {r.comment && <div style={s.comment}>"{r.comment}"</div>}
+          </div>
+        ))}
+      </div>
 
       {showForm && (
         <div className="card fade-in" style={{ marginTop: 10 }}>
@@ -428,4 +439,6 @@ const s = {
   roomChecked: { background: "#F2E8D5", borderColor: "#7B4F2E", color: "#5C3317", fontWeight: 700 },
   roomUnavailable: { background: "#F5F5F5", border: "1px solid #E0E0E0", color: "#BBBBBB", cursor: "not-allowed", opacity: 0.7 },
   skipNote: { fontSize: 10, color: "#9A7A62", textAlign: "center", marginTop: 6 },
+  allResaHeader: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "white", borderRadius: 12, border: "1px solid rgba(123,79,46,0.15)", marginTop: 10, cursor: "pointer", fontSize: 13, fontWeight: 700, color: "#5C3317", boxShadow: "0 1px 6px rgba(92,51,23,0.07)" },
+  allResaChevron: { fontSize: 16, color: "#9A7A62", transition: "transform 0.2s" },
 };
