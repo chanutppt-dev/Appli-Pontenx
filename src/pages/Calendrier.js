@@ -240,7 +240,7 @@ export default function Calendrier() {
                 <span>{format(day, "d")}</span>
                 {dayRes.length > 0 && (
                   <div style={s.dots}>
-                    {dayRes.slice(0, 3).map(r => (
+                    {dayRes.map(r => (
                       <div key={r.id} style={{ ...s.dot, background: colorMap[r.userId] || "#A0693A" }} />
                     ))}
                   </div>
